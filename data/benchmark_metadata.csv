@@ -1,0 +1,17 @@
+parameter,value
+p0,100.0
+pc0,120.0
+e0,0.72
+sr_res,0.08
+sr_sat,0.98
+alpha_dry,0.03
+alpha_wet,0.018
+n_dry,1.7
+n_wet,1.45
+k_suction,0.52
+h_suction,0.38
+beta_h,0.2
+beta_c,0.26
+g0,42.0
+m_cc,1.25
+gamma_y0,0.006

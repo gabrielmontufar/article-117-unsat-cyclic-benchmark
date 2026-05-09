@@ -1,0 +1,17 @@
+parameter,description,unit,value
+p0,reference mean stress,kPa,100.0
+pc0,initial preconsolidation pressure,kPa,120.0
+e0,initial void ratio,-,0.72
+sr_res,residual degree of saturation,-,0.08
+sr_sat,saturated degree of saturation,-,0.98
+alpha_dry,drying retention parameter,1/kPa,0.03
+alpha_wet,wetting retention parameter,1/kPa,0.018
+n_dry,drying van Genuchten exponent,-,1.7
+n_wet,wetting van Genuchten exponent,-,1.45
+k_suction,suction hardening coefficient,-,0.52
+h_suction,wetting-collapse coefficient,-,0.38
+beta_h,maximum hydraulic damage factor,-,0.2
+beta_c,maximum cyclic damage factor,-,0.26
+g0,reference shear stiffness,MPa,42.0
+m_cc,cyclic threshold multiplier,-,1.25
+gamma_y0,reference yield shear strain,-,0.006
