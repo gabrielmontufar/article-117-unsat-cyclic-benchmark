@@ -1,0 +1,4 @@
+source_family,suction_kpa,model_final_plastic_strain_index,model_mean_stiffness_mpa,published_trend,plastic_reduction_vs_0kpa_pct,stiffness_increase_vs_0kpa_pct,trend_match
+Dai and Zhou (2026) / Ng et al. suction trend,0.0,0.009904142458516651,41.945462293681686,higher suction reduces permanent strain and increases resilient/dynamic stiffness,0.0,0.0,True
+Dai and Zhou (2026) / Ng et al. suction trend,10.0,0.007004758957713374,43.41491064771229,higher suction reduces permanent strain and increases resilient/dynamic stiffness,29.274452714581813,3.503235567514418,True
+Dai and Zhou (2026) / Ng et al. suction trend,30.0,0.002983394658362779,46.35506456171588,higher suction reduces permanent strain and increases resilient/dynamic stiffness,69.8773046646019,10.512703941990932,True

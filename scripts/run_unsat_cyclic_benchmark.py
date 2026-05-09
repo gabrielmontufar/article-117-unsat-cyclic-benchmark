@@ -56,12 +56,12 @@ def vg_saturation(suction: np.ndarray, alpha: float, n: float, p: Params) -> np.
     return p.sr_res + (p.sr_sat - p.sr_res) * se
 
 
-def simulate_case(model: str, suction_amp: float, cyclic_amp: float, n_steps: int = 720) -> pd.DataFrame:
+def simulate_case(model: str, suction_amp: float, cyclic_amp: float, n_steps: int = 720, suction_mean: float = 90.0) -> pd.DataFrame:
     p = Params()
     t = np.linspace(0.0, 1.0, n_steps)
     cycles_h = 2.0
     cycles_s = 18.0
-    suction = 90.0 + suction_amp * np.sin(2.0 * math.pi * cycles_h * t - math.pi / 4.0)
+    suction = suction_mean + suction_amp * np.sin(2.0 * math.pi * cycles_h * t - math.pi / 4.0)
     suction = np.clip(suction, 3.0, None)
 
     drying = np.gradient(suction) >= 0.0
@@ -69,8 +69,8 @@ def simulate_case(model: str, suction_amp: float, cyclic_amp: float, n_steps: in
     sr_wet = vg_saturation(suction, p.alpha_wet, p.n_wet, p)
 
     if model == "constant_suction":
-        sr = np.full_like(suction, vg_saturation(np.array([90.0]), p.alpha_dry, p.n_dry, p)[0])
-        suction_eff = np.full_like(suction, 90.0)
+        sr = np.full_like(suction, vg_saturation(np.array([suction_mean]), p.alpha_dry, p.n_dry, p)[0])
+        suction_eff = np.full_like(suction, suction_mean)
         dh = np.zeros_like(suction)
     elif model == "no_hysteresis":
         sr = vg_saturation(suction, p.alpha_dry, p.n_dry, p)
@@ -397,6 +397,45 @@ def write_parameter_table():
     )
 
 
+def partial_quantitative_validation() -> pd.DataFrame:
+    rows = []
+    for suction in [0.0, 10.0, 30.0]:
+        g = simulate_case("full_hysteretic_damage", suction_amp=0.0, cyclic_amp=0.20, n_steps=720, suction_mean=suction)
+        rows.append(
+            {
+                "source_family": "Dai and Zhou (2026) / Ng et al. suction trend",
+                "suction_kpa": suction,
+                "model_final_plastic_strain_index": g["plastic_strain_index"].iloc[-1],
+                "model_mean_stiffness_mpa": g["secant_stiffness_mpa"].mean(),
+                "published_trend": "higher suction reduces permanent strain and increases resilient/dynamic stiffness",
+            }
+        )
+    out = pd.DataFrame(rows)
+    first = out.iloc[0]
+    out["plastic_reduction_vs_0kpa_pct"] = 100.0 * (
+        1.0 - out["model_final_plastic_strain_index"] / first["model_final_plastic_strain_index"]
+    )
+    out["stiffness_increase_vs_0kpa_pct"] = 100.0 * (
+        out["model_mean_stiffness_mpa"] / first["model_mean_stiffness_mpa"] - 1.0
+    )
+    out["trend_match"] = (
+        out["model_final_plastic_strain_index"].is_monotonic_decreasing
+        and out["model_mean_stiffness_mpa"].is_monotonic_increasing
+    )
+    out.to_csv(DATA / "partial_quantitative_validation.csv", index=False)
+    draw_line_plot(
+        [
+            ("plastic index", out["suction_kpa"].to_numpy(), out["model_final_plastic_strain_index"].to_numpy()),
+            ("mean stiffness / 100", out["suction_kpa"].to_numpy(), out["model_mean_stiffness_mpa"].to_numpy() / 100.0),
+        ],
+        "Partial quantitative validation against published suction trends",
+        "controlled suction (kPa)",
+        "normalized response metric",
+        FIGS / "fig13_partial_quantitative_validation.png",
+    )
+    return out
+
+
 def main():
     models = ["constant_suction", "no_hysteresis", "hysteresis_only", "full_hysteretic_damage"]
     suction_amps = [25.0, 50.0, 75.0, 100.0]
@@ -409,6 +448,7 @@ def main():
     validation = write_external_validation()
     convergence = timestep_convergence()
     write_parameter_table()
+    partial_validation = partial_quantitative_validation()
 
     # Verification against closed-form reference components.
     p = Params()
